@@ -22,6 +22,10 @@ def clear_terminal():
   '''
   os.system('cls' if os.name == 'nt' else 'clear')
 
+def find_files_in_folder(folder_path):
+  files = os.listdir(folder_path)
+  return files
+
 def csv_to_list(csv_file):
   '''
   Function to open csv file and pop out the headers.
@@ -89,19 +93,23 @@ def free_response(flashcard_csv,answer_with='back',order='random',num_cards='all
   input()
   
 def main():
-  # creates a dictionary to access flashcard csv files
-  flashcard_sets = {'poly ions': 'common_polyatomic_ions_and_acids.csv'}
+  # creates a dictionary to access flashcard csv files automatically from a given directory
+  folder_path = input("Folder path where flashcard set csv files are stored: ")
+  files_in_folder = find_files_in_folder(folder_path)
+  csv_files_in_folder = [file for file in files_in_folder if file.endswith('.csv')]
+  flashcard_sets = dict([str(index+1),file] for index,file in enumerate(csv_files_in_folder))
+  print(flashcard_sets)
 
   # acquires user input to configure testing mode
   clear_terminal()
   while True:
     try:
-      print(f'{tabulate(list(flashcard_sets.items()),headers=["Keyword","File Name"])}')
-      flashcard_set = flashcard_sets[input('\nChoose a flashcard set using its keyword: ')]
+      print(f'{tabulate(list(flashcard_sets.items()),headers=["Index","File Name"])}')
+      flashcard_set = flashcard_sets[input('\nChoose a flashcard set using its index: ')]
       break
     except KeyError:
       clear_terminal()
-      print('Not a valid keyword\n')
+      print('Not a valid index\n')
 
   clear_terminal()
   answer_with_side = input('Choose a side to answer with (front or back): ').lower()
