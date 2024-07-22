@@ -10,6 +10,7 @@ alike. I may be overselling it a little bit, but who cares? It's free.
 
 import csv
 import os
+import sys
 import random
 from tabulate import tabulate
 from termcolor import colored
@@ -25,6 +26,9 @@ def clear_terminal():
 def find_files_in_folder(folder_path):
   files = os.listdir(folder_path)
   return files
+
+def get_script_directory_path():
+  return os.path.dirname(os.path.realpath(sys.argv[0]))
 
 def csv_to_list(csv_file):
   '''
@@ -94,8 +98,7 @@ def free_response(flashcard_csv,answer_with='back',order='random',num_cards='all
   
 def main():
   # creates a dictionary to access flashcard csv files automatically from a given directory
-  folder_path = input("Folder path where flashcard set csv files are stored: ")
-  files_in_folder = find_files_in_folder(folder_path)
+  files_in_folder = find_files_in_folder(get_script_directory_path())
   csv_files_in_folder = [file for file in files_in_folder if file.endswith('.csv')]
   flashcard_sets = dict([str(index+1),file] for index,file in enumerate(csv_files_in_folder))
   print(flashcard_sets)
