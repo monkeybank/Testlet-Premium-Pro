@@ -6,6 +6,18 @@ Ever get tired of the big coroprations charging you inordinate amounts of
 money just to study for flashcards? Well, fret no longer because Teslet is
 the ultimate terminal-based study tool for students and lifelong learners
 alike. I may be overselling it a little bit, but who cares? It's free.
+
+ _              _ _                                                       
+| |   _   _  __| (_) ___ _ __ ___  _   _ ___                              
+| |  | | | |/ _` | |/ __| '__/ _ \| | | / __|                             
+| |__| |_| | (_| | | (__| | | (_) | |_| \__ \                             
+|_____\__,_|\______|\___|_|  \___/ \__,_|___/  ____                       
+/ ___|  ___  / _| |___      ____ _ _ __ ___   / ___|_ __ ___  _   _ _ __  
+\___ \ / _ \| |_| __\ \ /\ / / _` | '__/ _ \ | |  _| '__/ _ \| | | | '_ \ 
+ ___) | (_) |  _| |_ \ V  V / (_| | | |  __/ | |_| | | | (_) | |_| | |_) |
+|____/ \___/|_|  \__| \_/\_/ \__,_|_|  \___|  \____|_|  \___/ \__,_| .__/ 
+                                                                   |_|    
+                                                      all rights reserved
 '''
 
 import csv
@@ -39,29 +51,25 @@ def csv_to_list(csv_file):
   headers = csv_list.pop(0)
   return csv_list,headers
 
-def free_response(flashcard_csv,answer_with='back',order='random',num_cards='all'):
+def free_response(set_list,headers,answer_with,order,num_cards):
   '''
   Test yourself on a flashcard set using free response questions
   answering with front or back, either in order of the set file 
   or a random order, and with all or a subset of the cards 
   avaliable.
   '''
-  # creates a list with the flashcards and a list with the categories
-  set_list,headers = csv_to_list(flashcard_csv)
-
   # applies user parameters to the flashcard list
-  if answer_with == 'front':
+  if answer_with == '2':
     headers = list(reversed(headers))
     set_list = [list(reversed(card)) for card in set_list]
-  if not order == 'normal':
+  if order == '1':
     random.shuffle(set_list)
-  if num_cards == 'all' or num_cards>len(set_list):
-    num_cards = len(set_list)
 
   # variables to track user stats
   num_correct = 0
   missed_cards = []
   incorrect_answers = []
+  num_cards_tested = num_cards
 
   # iterates through flashcard list and asks the user for answers
   for index,flashcard in enumerate(set_list):
@@ -73,7 +81,7 @@ def free_response(flashcard_csv,answer_with='back',order='random',num_cards='all
 
     # checks whether user input is correct, incorrect, or quit
     if user_answer == '/quit':
-      num_cards = index
+      num_cards_tested = index
       break
     if user_answer == flashcard[1].lower():
       print(colored('Correct','green'))
@@ -91,19 +99,29 @@ def free_response(flashcard_csv,answer_with='back',order='random',num_cards='all
   
   # displays the number of questions the user answered correctly and displays incorrect answers
   clear_terminal()
-  print(f'You scored {num_correct}/{str(num_cards)}')
-  print(f'Take a look at the cards you missed\n')
-  print(f'{tabulate(missed_cards_and_incorrect_answers,headers="firstrow")}')
-  input()
+  print(f'You scored {num_correct}/{str(num_cards_tested)}')
+  if missed_cards:
+    print(f'Take a look at the cards you missed\n')
+    print(f'{tabulate(missed_cards_and_incorrect_answers,headers="firstrow")}')
+
+  # asks the user if they want to study again
+  print('\n1 - study set again')
+  if missed_cards:
+    print('2 - study missed answers')
+  print('any other key - quit studying')
+  study_again_choice = input('\nEnter choice: ')
+  if study_again_choice == '1':
+    free_response(set_list,headers,'',order,num_cards)
+  elif study_again_choice == '2' and missed_cards:
+    free_response(missed_cards,headers,'',order,len(missed_cards))
   
 def main():
   # creates a dictionary to access flashcard csv files automatically from a given directory
   files_in_folder = find_files_in_folder(get_script_directory_path())
   csv_files_in_folder = [file for file in files_in_folder if file.endswith('.csv')]
   flashcard_sets = dict([str(index+1),file] for index,file in enumerate(csv_files_in_folder))
-  print(flashcard_sets)
 
-  # acquires user input to configure testing mode
+  # acquires user input to choose flashcard set
   clear_terminal()
   while True:
     try:
@@ -113,14 +131,65 @@ def main():
     except KeyError:
       clear_terminal()
       print('Not a valid index\n')
+  cards_in_set = len(csv_to_list(flashcard_set)[0])
 
+  # acquires user input to choose answer mode
   clear_terminal()
-  answer_with_side = input('Choose a side to answer with (front or back): ').lower()
+  while True:
+    print('1 - answer with back of flashcard')
+    print('2 - answer with front of flashcard')
+    answer_with_side = input('\nEnter choice: ')
+    if answer_with_side in ['1','2']:
+      break
+    elif answer_with_side == '':
+      answer_with_side = '1'
+      break
+    elif answer_with_side == '/quit':
+      main()
+      return
+    else:
+      clear_terminal()
+      print('Not a valid input\n')
 
+  # acquires user input to choose flashcard order
   clear_terminal()
-  flashcard_order = input('Choose an order (normal or random): ')
+  while True:
+    print('1 - answer flashcards in random order')
+    print('2 - answer flashcards in normal order')
+    flashcard_order = input('\nEnter choice: ')
+    if flashcard_order in ['1','2']:
+      break
+    elif flashcard_order == '':
+      flashcard_order = '1'
+      break
+    elif flashcard_order == '/quit':
+      main()
+      return
+    else:
+      clear_terminal()
+      print('Not a valid input\n')
+
+  # aquires user input to choose number of flashcards to study
+  clear_terminal()
+  while True:
+    print(f'Choose number of flashcards to study. Chosen set contains {cards_in_set} flashcards')
+    print('Press enter or type "all" to sudy all cards in set')
+    num_cards_to_study = input('\nEnter choice: ')
+    if num_cards_to_study in [str(x+1) for x in range(cards_in_set)]:
+      num_cards_to_study = int(num_cards_to_study)
+      break
+    elif num_cards_to_study == '' or num_cards_to_study.lower() == 'all':
+      num_cards_to_study = cards_in_set
+      break
+    else:
+      clear_terminal()
+      print('Not a valid input\n')
+
+
+  # creates a list with the flashcards and a list with the categories
+  set_list,headers = csv_to_list(flashcard_set)
 
   # calls main testing function
-  free_response(flashcard_set,answer_with_side,flashcard_order)
+  free_response(set_list,headers,answer_with_side,flashcard_order,num_cards_to_study)
 
 main()
