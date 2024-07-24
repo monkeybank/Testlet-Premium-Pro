@@ -51,6 +51,99 @@ def csv_to_list(csv_file):
   headers = csv_list.pop(0)
   return csv_list,headers
 
+def get_user_testing_options(flashcard_sets):
+  # acquires user input to choose flashcard set
+  clear_terminal()
+  while True:
+    try:
+      print(f'{tabulate(list(flashcard_sets.items()),headers=["Index","File Name"])}')
+      flashcard_set = flashcard_sets[input('\nChoose a flashcard set using its index: ')]
+      break
+    except KeyError:
+      clear_terminal()
+      print('Not a valid index\n')
+  cards_in_set = len(csv_to_list(flashcard_set)[0])
+
+  # asks user if they want to use default settings or customize them
+  clear_terminal()
+  while True:
+    print('1 - use default settings')
+    print('2 - customize settings')
+    use_default_settings = input('\nEnter choice: ')
+    if use_default_settings in ['1','2']:
+      break
+    elif use_default_settings == '':
+      use_default_settings = '1'
+      break
+    elif use_default_settings == '/quit':
+      main()
+      quit()
+    else:
+      clear_terminal()
+      print('Not a valid input\n')
+
+  if use_default_settings == '1':
+    answer_with_side = '1'
+    flashcard_order = '1'
+    num_cards_to_study = cards_in_set
+  elif use_default_settings == '2':
+    # acquires user input to choose answer mode
+    clear_terminal()
+    while True:
+      print('1 - answer with back of flashcard')
+      print('2 - answer with front of flashcard')
+      answer_with_side = input('\nEnter choice: ')
+      if answer_with_side in ['1','2']:
+        break
+      elif answer_with_side == '':
+        answer_with_side = '1'
+        break
+      elif answer_with_side == '/quit':
+        main()
+        quit()
+      else:
+        clear_terminal()
+        print('Not a valid input\n')
+
+    # acquires user input to choose flashcard order
+    clear_terminal()
+    while True:
+      print('1 - answer flashcards in random order')
+      print('2 - answer flashcards in normal order')
+      flashcard_order = input('\nEnter choice: ')
+      if flashcard_order in ['1','2']:
+        break
+      elif flashcard_order == '':
+        flashcard_order = '1'
+        break
+      elif flashcard_order == '/quit':
+        main()
+        quit()
+      else:
+        clear_terminal()
+        print('Not a valid input\n')
+
+    # aquires user input to choose number of flashcards to study
+    clear_terminal()
+    while True:
+      print(f'Choose number of flashcards to study. Chosen set contains {cards_in_set} flashcards')
+      print('Press enter or type "all" to sudy all cards in set')
+      num_cards_to_study = input('\nEnter choice: ')
+      if num_cards_to_study in [str(x+1) for x in range(cards_in_set)]:
+        num_cards_to_study = int(num_cards_to_study)
+        break
+      elif num_cards_to_study == '' or num_cards_to_study.lower() == 'all':
+        num_cards_to_study = cards_in_set
+        break
+      elif num_cards_to_study == '/quit':
+        main()
+        quit()
+      else:
+        clear_terminal()
+        print('Not a valid input\n')
+
+  return flashcard_set, answer_with_side, flashcard_order, num_cards_to_study
+
 def free_response(set_list,headers,answer_with,order,num_cards):
   '''
   Test yourself on a flashcard set using free response questions
@@ -121,70 +214,7 @@ def main():
   csv_files_in_folder = [file for file in files_in_folder if file.endswith('.csv')]
   flashcard_sets = dict([str(index+1),file] for index,file in enumerate(csv_files_in_folder))
 
-  # acquires user input to choose flashcard set
-  clear_terminal()
-  while True:
-    try:
-      print(f'{tabulate(list(flashcard_sets.items()),headers=["Index","File Name"])}')
-      flashcard_set = flashcard_sets[input('\nChoose a flashcard set using its index: ')]
-      break
-    except KeyError:
-      clear_terminal()
-      print('Not a valid index\n')
-  cards_in_set = len(csv_to_list(flashcard_set)[0])
-
-  # acquires user input to choose answer mode
-  clear_terminal()
-  while True:
-    print('1 - answer with back of flashcard')
-    print('2 - answer with front of flashcard')
-    answer_with_side = input('\nEnter choice: ')
-    if answer_with_side in ['1','2']:
-      break
-    elif answer_with_side == '':
-      answer_with_side = '1'
-      break
-    elif answer_with_side == '/quit':
-      main()
-      return
-    else:
-      clear_terminal()
-      print('Not a valid input\n')
-
-  # acquires user input to choose flashcard order
-  clear_terminal()
-  while True:
-    print('1 - answer flashcards in random order')
-    print('2 - answer flashcards in normal order')
-    flashcard_order = input('\nEnter choice: ')
-    if flashcard_order in ['1','2']:
-      break
-    elif flashcard_order == '':
-      flashcard_order = '1'
-      break
-    elif flashcard_order == '/quit':
-      main()
-      return
-    else:
-      clear_terminal()
-      print('Not a valid input\n')
-
-  # aquires user input to choose number of flashcards to study
-  clear_terminal()
-  while True:
-    print(f'Choose number of flashcards to study. Chosen set contains {cards_in_set} flashcards')
-    print('Press enter or type "all" to sudy all cards in set')
-    num_cards_to_study = input('\nEnter choice: ')
-    if num_cards_to_study in [str(x+1) for x in range(cards_in_set)]:
-      num_cards_to_study = int(num_cards_to_study)
-      break
-    elif num_cards_to_study == '' or num_cards_to_study.lower() == 'all':
-      num_cards_to_study = cards_in_set
-      break
-    else:
-      clear_terminal()
-      print('Not a valid input\n')
-
+  flashcard_set, answer_with_side, flashcard_order, num_cards_to_study = get_user_testing_options(flashcard_sets)
 
   # creates a list with the flashcards and a list with the categories
   set_list,headers = csv_to_list(flashcard_set)
