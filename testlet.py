@@ -170,7 +170,7 @@ def free_response(set_list,headers,answer_with,order,num_cards):
     print(f'You will be given the {headers[0]}\nPlease answer with the {headers[1]}')
 
     # takes user input for the answer
-    user_answer = input(f'\n{flashcard[0]}: ').lower()
+    user_answer = input(f'\n{flashcard[0]}: ').lower().strip()
 
     # checks whether user input is correct, incorrect, or quit
     if user_answer == '/quit':
